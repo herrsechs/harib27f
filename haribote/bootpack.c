@@ -96,15 +96,18 @@ void HariMain(void)
 
 	/* sht_link */
 	sht_link = sheet_alloc(shtctl);
-	sheet_setbuf(sht_link, buf_link, binfo->scrnx, binfo->scrny, -1);
+	buf_link  = (unsigned char *) memman_alloc_4k(memman, binfo->scrnx * binfo->scrny);
+	sheet_setbuf(sht_link, buf_link, binfo->scrnx, binfo->scrny, 0);
 	init_link(buf_link, binfo->scrnx, binfo->scrny);
 
 	sheet_slide(sht_back,  0,  0);
+	sheet_slide(sht_link,  0,  0);
 	sheet_slide(key_win,   32, 4);
 	sheet_slide(sht_mouse, mx, my);
 	sheet_updown(sht_back,  0);
-	sheet_updown(key_win,   1);
-	sheet_updown(sht_mouse, 2);
+	sheet_updown(key_win,   2);
+	sheet_updown(sht_link,  1);
+	sheet_updown(sht_mouse, 3);
 	keywin_on(key_win);
 
 	/* Å‰‚ÉƒL[ƒ{[ƒhó‘Ô‚Æ‚ÌH‚¢ˆá‚¢‚ª‚È‚¢‚æ‚¤‚ÉAÝ’è‚µ‚Ä‚¨‚­‚±‚Æ‚É‚·‚é */
@@ -274,7 +277,7 @@ void HariMain(void)
 						if (mmx < 0) {
 							/* ’Êíƒ‚[ƒh‚Ìê‡ */
 							/* ã‚Ì‰º‚¶‚«‚©‚ç‡”Ô‚Éƒ}ƒEƒX‚ªŽw‚µ‚Ä‚¢‚é‰º‚¶‚«‚ð’T‚· */
-							for (j = shtctl->top - 1; j > -1; j--) {
+							for (j = shtctl->top - 1; j > 0; j--) {
 								sht = shtctl->sheets[j];
 								x = mx - sht->vx0;
 								y = my - sht->vy0;
@@ -314,9 +317,18 @@ void HariMain(void)
 											}
 										}
 										if( x > 50 && x < 100 && y > 50 && y < 100){
-											char* ss;
+											/*char* ss;
 											sprintf(ss, "(%3d, %3d)", x, y);
-											putfonts8_asc_sht(sht, 0, 0, 5, COL8_008484, ss, 10);
+											putfonts8_asc_sht(sht, 0, 0, 5, COL8_008484, ss, 10);*/
+											struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
+											struct SHEET *sht_ = sheet_alloc(shtctl);
+											unsigned char *buf_ = (unsigned char *) memman_alloc_4k(memman, 256 * 165);
+											sheet_setbuf(sht_, buf_, 256, 165, -1); /* “§–¾F‚È‚µ */
+											make_window8(buf_, 256, 165, "new window", 0);
+											make_textbox8(sht_, 8, 28, 240, 128, COL8_000000);
+											//sht->task = open_constask(sht, memtotal);
+											//sht->flags |= 0x20;	/* ƒJ[ƒ\ƒ‹‚ ‚è */
+											sheet_updown(sht_, shtctl->top);
 										}
 										break;
 									}
