@@ -85,8 +85,10 @@ void init_screen8(char *vram, int x, int y)
 	return;
 }
 
-void init_link(char* vram, int x, int y){
-	boxfill8(vram, x, 11, 50, 50, 100, 100);
+void init_link(char* vram, int x, int y, int start_x, int start_y, struct QLCTL* ctl){
+    int i = 0;
+    for(; i < ctl->amount; i++)
+        boxfill8(vram, x, 11, start_x, 70*i+start_y, start_x+50, 50+70*i+start_y);
 	return;
 }
 

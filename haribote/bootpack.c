@@ -25,6 +25,8 @@ void HariMain(void)
 	unsigned char *buf_back, buf_mouse[256], *buf_link;
 	struct SHEET *sht_back, *sht_mouse, *sht_link;
 	struct TASK *task_a, *task;
+	struct QUICKLINK *ql1, *ql2;
+	struct QLCTL* qctl;
 	static char keytable0[0x80] = {
 		0,   0,   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0x08, 0,
 		'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0x0a, 0, 'A', 'S',
@@ -98,7 +100,10 @@ void HariMain(void)
 	sht_link = sheet_alloc(shtctl);
 	buf_link  = (unsigned char *) memman_alloc_4k(memman, binfo->scrnx * binfo->scrny);
 	sheet_setbuf(sht_link, buf_link, binfo->scrnx, binfo->scrny, 0);
-	init_link(buf_link, binfo->scrnx, binfo->scrny);
+	qctl = qlctl_init(memman);
+    ql1 = quicklink_alloc(qctl);
+	ql2 = quicklink_alloc(qctl);
+	init_link(buf_link, binfo->scrnx, binfo->scrny, QL_START_X, QL_START_Y, qctl);
 
 	sheet_slide(sht_back,  0,  0);
 	sheet_slide(sht_link,  0,  0);
@@ -316,20 +321,25 @@ void HariMain(void)
 												io_sti();
 											}
 										}
-										if( x > 50 && x < 100 && y > 50 && y < 100){
-											/*char* ss;
-											sprintf(ss, "(%3d, %3d)", x, y);
-											putfonts8_asc_sht(sht, 0, 0, 5, COL8_008484, ss, 10);*/
+                                        //Condition here
+                                            int ql_clicked = quicklink_click_listener(x, y, QL_START_X, QL_START_Y, qctl);
+                                            if(  ql_clicked != -1){
+                                                char* ss;
+                                                sprintf(ss, "Ql %3d clicked!", ql_clicked);
+                                                putfonts8_asc_sht(sht, 0, 0, 5, COL8_008484, ss, 10);
+											/*
 											struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 											struct SHEET *sht_ = sheet_alloc(shtctl);
 											unsigned char *buf_ = (unsigned char *) memman_alloc_4k(memman, 256 * 165);
-											sheet_setbuf(sht_, buf_, 256, 165, -1); /* “§–¾F‚È‚µ */
+											sheet_setbuf(sht_, buf_, 256, 165, -1); /* “§–¾F‚È‚µ
 											make_window8(buf_, 256, 165, "new window", 0);
 											make_textbox8(sht_, 8, 28, 240, 128, COL8_000000);
 											//sht->task = open_constask(sht, memtotal);
-											//sht->flags |= 0x20;	/* ƒJ[ƒ\ƒ‹‚ ‚è */
-											sheet_updown(sht_, shtctl->top);
-										}
+											//sht->flags |= 0x20;	/* ƒJ[ƒ\ƒ‹‚ ‚è
+											sheet_updown(sht_, shtctl->top);*/
+
+                                            }
+
 										break;
 									}
 								}
@@ -435,4 +445,22 @@ void close_console(struct SHEET *sht)
 	close_constask(task);
 	return;
 }
+/*
+    (x,y) is the coordination of cursor
+    (start_x, start_y) is the start point of quick link sheet
+    Return the number of quick link being clicked
+*/
+int quicklink_click_listener(int x, int y, int start_x, int start_y, struct QLCTL* ctl)
+{
+    int i = 0;
+    int clicked = -1;
+    for(; i < ctl->amount; i++)
+    {
+        if(x >= start_x && x <= start_x + 50 && y >= start_y + 70*i && y <= start_y + 50 + 70*i){
+            clicked = i;
+            break;
+        }
+    }
 
+    return clicked;
+}

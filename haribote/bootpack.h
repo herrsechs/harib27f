@@ -288,6 +288,25 @@ void file_loadfile(int clustno, int size, char *buf, int *fat, char *img);
 struct FILEINFO *file_search(char *name, struct FILEINFO *finfo, int max);
 char *file_loadfile2(int clustno, int *psize, int *fat);
 
+/* quick_link.c */
+#define MAX_QL 20
+#define QL_START_X 50
+#define QL_START_Y 50
+struct QUICKLINK {
+    unsigned char namr[10];
+};
+
+struct QLCTL {
+    int amount;
+    struct QUICKLINK* qls[MAX_QL];
+    int bitmap[MAX_QL];
+};
+
+struct QLCTL* qlctl_init(struct MEMMAN *memman);
+struct QUICKLINK* quicklink_alloc(struct QLCTL* ctl);
+void init_link(char* vram, int x, int y, int start_x, int start_y, struct QLCTL* ctl);
+
+
 /* tek.c */
 int tek_getsize(unsigned char *p);
 int tek_decomp(unsigned char *p, char *q, int size);
