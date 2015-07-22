@@ -293,7 +293,7 @@ char *file_loadfile2(int clustno, int *psize, int *fat);
 #define QL_START_X 50
 #define QL_START_Y 50
 struct QUICKLINK {
-    unsigned char namr[10];
+    unsigned char name[10];
 };
 
 struct QLCTL {
@@ -314,3 +314,4 @@ int tek_decomp(unsigned char *p, char *q, int size);
 /* bootpack.c */
 struct TASK *open_constask(struct SHEET *sht, unsigned int memtotal);
 struct SHEET *open_console(struct SHTCTL *shtctl, unsigned int memtotal);
+int run_app(int *fat, char *cmdline);
