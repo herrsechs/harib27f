@@ -1,5 +1,5 @@
 APP      = walk
-STACK    = 1k
-MALLOC   = 48k
+STACK    = 5k
+MALLOC   = 900k
 
 include ../app_make.txt

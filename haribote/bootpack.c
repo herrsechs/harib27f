@@ -3,6 +3,7 @@
 #include "bootpack.h"
 #include <stdio.h>
 #include <string.h>
+
 #define KEYCMD_LED		0xed
 
 void keywin_off(struct SHEET *key_win);
@@ -102,11 +103,6 @@ void HariMain(void)
 	sheet_setbuf(sht_link, buf_link, binfo->scrnx, binfo->scrny, 0);
 	qctl = qlctl_init(memman);
     ql1 = quicklink_alloc(qctl);
-    ql1->name[0] = 's';
-    ql1->name[1] = 't';
-    ql1->name[2] = 'a';
-    ql1->name[3] = 'r';
-    ql1->name[4] = '1';
 	ql2 = quicklink_alloc(qctl);
 	init_link(buf_link, binfo->scrnx, binfo->scrny, QL_START_X, QL_START_Y, qctl);
 
@@ -326,27 +322,13 @@ void HariMain(void)
 												io_sti();
 											}
 										}
-                                        //Condition here
                                             int ql_clicked = quicklink_click_listener(x, y, QL_START_X, QL_START_Y, qctl);
                                             if(  ql_clicked != -1){
-                                                int* fat = (int *) memman_alloc_4k(memman, 4 * 2880);
-                                                run_app(fat, qctl->qls[ql_clicked]->name);
 
-
-                                                char* ss;
-                                                sprintf(ss, "Ql %3d clicked!", ql_clicked);
-                                                putfonts8_asc_sht(sht, 0, 0, 5, COL8_008484, ss, 10);
-
-											struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
-											struct SHEET *sht_ = sheet_alloc(shtctl);
-											unsigned char *buf_ = (unsigned char *) memman_alloc_4k(memman, 256 * 165);
-											sheet_setbuf(sht_, buf_, 256, 165, -1); /* “§–¾F‚È‚µ
-											make_window8(buf_, 256, 165, "new window", 0);
-											make_textbox8(sht_, 8, 28, 240, 128, COL8_000000);
-											//sht->task = open_constask(sht, memtotal);
-											//sht->flags |= 0x20;	/* ƒJ[ƒ\ƒ‹‚ ‚è
-											sheet_updown(sht_, shtctl->top);*/
-
+                                                //run_app(fat, "invader");
+                                                fifo32_put(&keycmd, 0x15 + 256);
+                                                cons_putstr0(task->cons, fifo32_get(&keycmd));
+                                                //open_console(shtctl, memman);
                                             }
 
 										break;
@@ -480,6 +462,8 @@ int run_app(int *fat, char *cmdline)
 	struct FILEINFO *finfo;
 	char name[18], *p, *q;
 	struct TASK *task = task_now();
+	//task_add(task);
+	//task_run(task, 1, 2);
 	int i, segsiz, datsiz, esp, dathrb, appsiz;
 	struct SHTCTL *shtctl;
 	struct SHEET *sht;
@@ -521,8 +505,11 @@ int run_app(int *fat, char *cmdline)
 			for (i = 0; i < datsiz; i++) {
 				q[esp + i] = p[dathrb + i];
 			}
+
 			start_app(0x1b, 0 * 8 + 4, esp, 1 * 8 + 4, &(task->tss.esp0));
+
 			shtctl = (struct SHTCTL *) *((int *) 0x0fe4);
+			/*
 			for (i = 0; i < MAX_SHEETS; i++) {
 				sht = &(shtctl->sheets0[i]);
 				if ((sht->flags & 0x11) == 0x11 && sht->task == task) {
@@ -541,7 +528,7 @@ int run_app(int *fat, char *cmdline)
 			task->langbyte1 = 0;
 		} else {
 			//cons_putstr0(cons, ".hrb file format error.\n");
-		}
+		}*/
 		memman_free_4k(memman, (int) p, appsiz);
 		//cons_newline(cons);
 		return 1;
